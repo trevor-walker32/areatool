@@ -27,9 +27,9 @@ def main(clargs: [str]):
 
 def find_location(image: np.array, template: np.array, location_type: str):
     locs = template_match(image, template, location_type)
-    meds = find_kmedoids(locs)
+    medoid = find_kmedoids(locs)
 
-    return locs[0]
+    return medoid
 
 
 
@@ -88,8 +88,8 @@ def template_match(image: np.array, template: np.array, location_type: str):
 def plot_and_save(image_matrix: np.array, returned_locations: list):
     axes = plt.gca()
 
-    for tup in returned_locations:
-        x,y = tup 
+    for point in returned_locations:
+        x,y = point[0]
         axes.plot(x, y, 'ro')
 
     plt.set_cmap("gray")
