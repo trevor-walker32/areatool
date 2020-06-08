@@ -3,7 +3,7 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from sklearn_extra.cluster import KMedoids
-
+# np.set_printoptions(threshold=sys.maxsize)
 
 
 def main(clargs: [str]):
@@ -59,28 +59,43 @@ def get_offset(template: np.array, location_type: str):
 
 
 def template_match(image: np.array, template: np.array, location_type: str):
+    # methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED', 'cv2.TM_CCOEFF_NORMED']
     methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
     locs = []
+
     for name in methods:
 
         imgmx = image.copy()
         method = eval(name)
 
         # Apply template Matching
-        res = cv2.matchTemplate(imgmx, template, method)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
 
-        # get all the matches:
-        result2 = np.reshape(res, res.shape[0] * res.shape[1])
-        sort = np.argsort(result2)
-        k = 5
+            res = cv2.matchTemplate(imgmx, template, method)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        for i in range(k):
-            w,h = get_offset(template, location_type)
-            tup = np.unravel_index(sort[i], res.shape)[::-1]
-            loc = [tup[0]+w, tup[1]+h]
-            locs.append(loc)
+            result2 = np.reshape(res, res.shape[0] * res.shape[1])
+            sort = np.argsort(result2)
+            k = 10
 
+            for i in range(k):
+                w,h = get_offset(template, location_type)
+                tup = np.unravel_index(sort[i], res.shape)[::-1]
+                loc = [tup[0]+w, tup[1]+h]
+                locs.append(loc)
+
+        elif method in [cv2.TM_CCOEFF_NORMED]:
+
+            res = cv2.matchTemplate(imgmx, template, cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            threshold = max_val * .95
+            results = np.where( res >= threshold)
+
+            for pt in zip(*results[::-1]):
+                w,h = get_offset(template, location_type)
+                npt = [pt[0]+w, pt[1]+h]
+                locs.append(npt)
+    
     return locs
 
 
