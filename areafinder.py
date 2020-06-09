@@ -6,23 +6,34 @@ from sklearn_extra.cluster import KMedoids
 # np.set_printoptions(threshold=sys.maxsize)
 
 
+
 def main(clargs: [str]):
     im_path = "./" + clargs[0]
     my_img = cv2.imread(im_path, 0)
-
-    top_left_corner = cv2.imread('./top_left.png', 0)
-    top_right_corner = cv2.imread('./top_right.png', 0)
-    bottom_left_corner = cv2.imread('./bottom_left.png', 0)
-    bottom_right_corner = cv2.imread('./bottom_right.png', 0)
-
     corners = []
-    corners.append(find_location(my_img, top_left_corner, 'top_left'))
-    corners.append(find_location(my_img, bottom_left_corner, 'bottom_left'))
-    corners.append(find_location(my_img, bottom_right_corner, 'bottom_right'))
-    corners.append(find_location(my_img, top_right_corner, 'top_right'))
+
+
+    # top_left_corner = cv2.imread('./top_left.png', 0)
+    # top_right_corner = cv2.imread('./top_right.png', 0)
+    # bottom_left_corner = cv2.imread('./bottom_left.png', 0)
+    # bottom_right_corner = cv2.imread('./bottom_right.png', 0)
+
+    # corners.append(find_location(my_img, top_left_corner, 'sq_top_left'))
+    # corners.append(find_location(my_img, bottom_left_corner, 'sq_bot_left'))
+    # corners.append(find_location(my_img, bottom_right_corner, 'sq_bot_right'))
+    # corners.append(find_location(my_img, top_right_corner, 'sq_top_right'))
+
+
+    top_corner = cv2.imread('./triangle_top.png', 0)
+    left_corner = cv2.imread('./triangle_left.png', 0)
+    right_corner = cv2.imread('./triangle_right.png', 0)
+
+    corners.append(find_location(my_img, top_corner, 'tri_top'))
+    corners.append(find_location(my_img, left_corner, 'tri_left'))
+    corners.append(find_location(my_img, right_corner, 'tri_right'))
+
 
     #### points must pass vertical line test if plotted sequentially (no three intersections)
-
     area = PolyArea(corners)
 
     #TODO transform area from pixels to actual footage, use the key in the plans
@@ -50,14 +61,20 @@ def find_kmedoids(locations, clusters=1, random_state=None):
 def get_offset(template: np.array, location_type: str):
     w,h = template.shape[::-1]
 
-    if location_type == 'bottom_right':
+    if location_type == 'sq_bot_right':
         new_w, new_h = (w, h)
-    elif location_type == 'bottom_left':
+    elif location_type == 'sq_bot_left':
         new_w, new_h = (0, h)
-    elif location_type == 'top_left':
+    elif location_type == 'sq_top_left':
         new_w, new_h = (0, 0)
-    elif location_type == 'top_right':
+    elif location_type == 'sq_top_right':
         new_w, new_h = (w, 0)
+    elif location_type == 'tri_top':
+        new_w, new_h = (w/2, 0)
+    elif location_type == 'tri_left':
+        new_w, new_h = (0, h)
+    elif location_type == 'tri_right':
+        new_w, new_h = (w, h)
     else:
         print("unknown location, exiting...")
         sys.exit(0)
@@ -103,7 +120,7 @@ def template_match(image: np.array, template: np.array, location_type: str):
                 w,h = get_offset(template, location_type)
                 npt = [pt[0]+w, pt[1]+h]
                 locs.append(npt)
-    
+
     return locs
 
 
@@ -122,12 +139,13 @@ def plot_and_save(image_matrix: np.array, returned_locations: list):
     plt.imsave('../array.png', image_matrix)
 
 
+
 def PolyArea(corners):
     uz = list(zip(*corners))
     xs = list(uz[0])
     ys = list(uz[1])
-
     return 0.5*np.abs(np.dot(xs,np.roll(ys,1))-np.dot(ys,np.roll(xs,1)))
+
 
 
 if __name__ == "__main__":
