@@ -21,16 +21,15 @@ def main(clargs: [str]):
     corners.append(find_location(my_img, bottom_right_corner, 'bottom_right'))
     corners.append(find_location(my_img, top_right_corner, 'top_right'))
 
-    #### points must pass vertical line test if plotted sequentially
+    #### points must pass vertical line test if plotted sequentially (no three intersections)
 
-    uz = list(zip(*corners))
-    xs = list(uz[0])
-    ys = list(uz[1])
+    area = PolyArea(corners)
 
-    value = PolyArea(xs, ys)
-    print(value)
+    #TODO transform area from pixels to actual footage, use the key in the plans
 
     plot_and_save(my_img, corners)
+
+    return area
 
 
 
@@ -123,13 +122,18 @@ def plot_and_save(image_matrix: np.array, returned_locations: list):
     plt.imsave('../array.png', image_matrix)
 
 
-def PolyArea(x,y):
-    return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
+def PolyArea(corners):
+    uz = list(zip(*corners))
+    xs = list(uz[0])
+    ys = list(uz[1])
+
+    return 0.5*np.abs(np.dot(xs,np.roll(ys,1))-np.dot(ys,np.roll(xs,1)))
 
 
 if __name__ == "__main__":
     if (len(sys.argv) > 1):
         clargs = sys.argv[1:]
-        main(clargs)
+        area = main(clargs)
+        print(f"area of plans are {area} square ft")
     else:
         print("not enough arguments!")
