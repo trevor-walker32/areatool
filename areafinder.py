@@ -10,35 +10,16 @@ from sklearn_extra.cluster import KMedoids
 def main(clargs: [str]):
     im_path = "./" + clargs[0]
     my_img = cv2.imread(im_path, 0)
-    corners = []
 
 
-    # top_left_corner = cv2.imread('./top_left.png', 0)
-    # top_right_corner = cv2.imread('./top_right.png', 0)
-    # bottom_left_corner = cv2.imread('./bottom_left.png', 0)
-    # bottom_right_corner = cv2.imread('./bottom_right.png', 0)
-
-    # corners.append(find_location(my_img, top_left_corner, 'sq_top_left'))
-    # corners.append(find_location(my_img, bottom_left_corner, 'sq_bot_left'))
-    # corners.append(find_location(my_img, bottom_right_corner, 'sq_bot_right'))
-    # corners.append(find_location(my_img, top_right_corner, 'sq_top_right'))
-
-
-    top_corner = cv2.imread('./triangle_top.png', 0)
-    left_corner = cv2.imread('./triangle_left.png', 0)
-    right_corner = cv2.imread('./triangle_right.png', 0)
-
-    corners.append(find_location(my_img, top_corner, 'tri_top'))
-    corners.append(find_location(my_img, left_corner, 'tri_left'))
-    corners.append(find_location(my_img, right_corner, 'tri_right'))
-
+    vertices = find_shape('square', my_img)
 
     #### points must pass vertical line test if plotted sequentially (no three intersections)
-    area = PolyArea(corners)
+    area = PolyArea(vertices)
 
     #TODO transform area from pixels to actual footage, use the key in the plans
 
-    plot_and_save(my_img, corners)
+    plot_and_save(my_img, vertices)
 
     return area
 
@@ -83,6 +64,31 @@ def get_offset(template: np.array, location_type: str):
 
 
 
+def find_shape(shape: str, image: np.array):
+    vertices = []
+
+    if shape == 'triangle':
+        top_corner = cv2.imread('./shapes/triangle_top.png', 0)
+        left_corner = cv2.imread('./shapes/triangle_left.png', 0)
+        right_corner = cv2.imread('./shapes/triangle_right.png', 0)
+        vertices.append(find_location(image, top_corner, 'tri_top'))
+        vertices.append(find_location(image, left_corner, 'tri_left'))
+        vertices.append(find_location(image, right_corner, 'tri_right'))
+
+    elif shape == 'square':
+        top_left_corner = cv2.imread('./shapes/top_left.png', 0)
+        top_right_corner = cv2.imread('./shapes/top_right.png', 0)
+        bottom_left_corner = cv2.imread('./shapes/bottom_left.png', 0)
+        bottom_right_corner = cv2.imread('./shapes/bottom_right.png', 0)
+        vertices.append(find_location(image, top_left_corner, 'sq_top_left'))
+        vertices.append(find_location(image, bottom_left_corner, 'sq_bot_left'))
+        vertices.append(find_location(image, bottom_right_corner, 'sq_bot_right'))
+        vertices.append(find_location(image, top_right_corner, 'sq_top_right'))
+
+    return vertices
+
+
+
 def template_match(image: np.array, template: np.array, location_type: str):
     # methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED', 'cv2.TM_CCOEFF_NORMED']
     methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
@@ -95,7 +101,6 @@ def template_match(image: np.array, template: np.array, location_type: str):
 
         # Apply template Matching
         if method in [cv2.TM_SQDIFF, cv2.TM_SQDIFF_NORMED]:
-
             res = cv2.matchTemplate(imgmx, template, method)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
@@ -110,7 +115,6 @@ def template_match(image: np.array, template: np.array, location_type: str):
                 locs.append(loc)
 
         elif method in [cv2.TM_CCOEFF_NORMED]:
-
             res = cv2.matchTemplate(imgmx, template, cv2.TM_CCOEFF_NORMED)
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
             threshold = max_val * .95
