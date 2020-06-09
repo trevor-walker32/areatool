@@ -9,17 +9,15 @@ from sklearn_extra.cluster import KMedoids
 
 def main(clargs: [str]):
     im_path = "./" + clargs[0]
-    my_img = cv2.imread(im_path, 0)
+    img_mx = cv2.imread(im_path, 0)
 
-
-    vertices = find_shape('square', my_img)
+    vertices = find_shape('square', img_mx)
 
     #### points must pass vertical line test if plotted sequentially (no three intersections)
     area = PolyArea(vertices)
 
     #TODO transform area from pixels to actual footage, use the key in the plans
-
-    plot_and_save(my_img, vertices)
+    plot_and_save(img_mx, vertices)
 
     return area
 
@@ -77,9 +75,9 @@ def find_shape(shape: str, image: np.array):
 
     elif shape == 'square':
         top_left_corner = cv2.imread('./shapes/top_left.png', 0)
-        top_right_corner = cv2.imread('./shapes/top_right.png', 0)
         bottom_left_corner = cv2.imread('./shapes/bottom_left.png', 0)
         bottom_right_corner = cv2.imread('./shapes/bottom_right.png', 0)
+        top_right_corner = cv2.imread('./shapes/top_right.png', 0)
         vertices.append(find_location(image, top_left_corner, 'sq_top_left'))
         vertices.append(find_location(image, bottom_left_corner, 'sq_bot_left'))
         vertices.append(find_location(image, bottom_right_corner, 'sq_bot_right'))
@@ -91,7 +89,8 @@ def find_shape(shape: str, image: np.array):
 
 def template_match(image: np.array, template: np.array, location_type: str):
     # methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED', 'cv2.TM_CCOEFF_NORMED']
-    methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+    # methods = ['cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+    methods = ['cv2.TM_CCOEFF_NORMED']
     locs = []
 
     for name in methods:
