@@ -16,10 +16,19 @@ def main(clargs: [str]):
     bottom_right_corner = cv2.imread('./bottom_right.png', 0)
 
     corners = []
+    corners.append(find_location(my_img, top_left_corner, 'top_left'))
     corners.append(find_location(my_img, bottom_left_corner, 'bottom_left'))
     corners.append(find_location(my_img, bottom_right_corner, 'bottom_right'))
     corners.append(find_location(my_img, top_right_corner, 'top_right'))
-    corners.append(find_location(my_img, top_left_corner, 'top_left'))
+
+    #### points must pass vertical line test if plotted sequentially
+
+    uz = list(zip(*corners))
+    xs = list(uz[0])
+    ys = list(uz[1])
+
+    value = PolyArea(xs, ys)
+    print(value)
 
     plot_and_save(my_img, corners)
 
@@ -29,7 +38,7 @@ def find_location(image: np.array, template: np.array, location_type: str):
     locs = template_match(image, template, location_type)
     medoid = find_kmedoids(locs)
 
-    return medoid
+    return medoid[0]
 
 
 
@@ -104,7 +113,7 @@ def plot_and_save(image_matrix: np.array, returned_locations: list):
     axes = plt.gca()
 
     for point in returned_locations:
-        x,y = point[0]
+        x,y = point
         axes.plot(x, y, 'ro')
 
     plt.set_cmap("gray")
@@ -113,6 +122,9 @@ def plot_and_save(image_matrix: np.array, returned_locations: list):
     plt.savefig('../output.png')
     plt.imsave('../array.png', image_matrix)
 
+
+def PolyArea(x,y):
+    return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
 
 
 if __name__ == "__main__":
