@@ -203,7 +203,6 @@ def plot_and_save(image_matrix: np.array, shapes: list):
         for point in shape:
             x,y = point
             color_index = i % 5
-            print(color_index)
             axes.plot(x, y, colors[color_index])
 
     plt.set_cmap("gray")
