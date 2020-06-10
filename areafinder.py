@@ -19,8 +19,19 @@ def main(clargs: [str]):
     #### points must pass vertical line test if plotted sequentially (no three intersections)
     area = 0
 
-    for shape in shapes:
+    for i, shape in enumerate(shapes):
         area += PolyArea(shape)
+        
+        axes = plt.gca()
+
+        for point in shape:
+            x,y = point
+            axes.plot(x, y, 'ro')
+
+        plt.set_cmap("gray")
+
+        plt.savefig(f'../output_{i}.png')
+
 
     #TODO transform area from pixels to actual footage, use the key in the plans
     plot_and_save(img_mx, allvertices)
