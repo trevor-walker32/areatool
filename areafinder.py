@@ -2,7 +2,7 @@ import sys
 import numpy as np 
 import cv2
 import matplotlib.pyplot as plt
-from sklearn_extra.cluster import KMedoids
+# from sklearn_extra.cluster import KMedoids
 from scipy import spatial
 # np.set_printoptions(threshold=sys.maxsize)
 
@@ -113,9 +113,9 @@ def find_location(image: np.array, template: np.array, location_type: str):
     return locs
 
 
-def find_kmedoids(locations, clusters=1, random_state=None):
-    kmedoids = KMedoids(n_clusters=clusters, random_state=random_state).fit(locations)
-    return kmedoids.cluster_centers_
+# def find_kmedoids(locations, clusters=1, random_state=None):
+#     kmedoids = KMedoids(n_clusters=clusters, random_state=random_state).fit(locations)
+#     return kmedoids.cluster_centers_
 
 
 
