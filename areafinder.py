@@ -9,7 +9,7 @@ from scipy import spatial
 
 
 def main(clargs: [str]):
-    im_path = "./" + clargs[0]
+    im_path = "./test_images/" + clargs[0]
     img_mx = cv2.imread(im_path, 0)
 
     allvertices, vertices_by_type = find_squares(img_mx)
@@ -21,20 +21,9 @@ def main(clargs: [str]):
 
     for i, shape in enumerate(shapes):
         area += PolyArea(shape)
-        
-        axes = plt.gca()
-
-        for point in shape:
-            x,y = point
-            axes.plot(x, y, 'ro')
-
-        plt.set_cmap("gray")
-
-        plt.savefig(f'../output_{i}.png')
-
 
     #TODO transform area from pixels to actual footage, use the key in the plans
-    plot_and_save(img_mx, allvertices)
+    plot_and_save(img_mx, shapes)
 
     return area
 
@@ -206,12 +195,16 @@ def get_offset(template: np.array, location_type: str):
 
 
 
-def plot_and_save(image_matrix: np.array, returned_locations: list):
+def plot_and_save(image_matrix: np.array, shapes: list):
     axes = plt.gca()
+    colors = ['ro', 'bo', 'go', 'ko', 'mo']
 
-    for point in returned_locations:
-        x,y = point
-        axes.plot(x, y, 'ro')
+    for i, shape in enumerate(shapes):
+        for point in shape:
+            x,y = point
+            color_index = i % 5
+            print(color_index)
+            axes.plot(x, y, colors[color_index])
 
     plt.set_cmap("gray")
     axes.imshow(image_matrix)
