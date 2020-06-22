@@ -7,14 +7,31 @@ from scipy import spatial
 # np.set_printoptions(threshold=sys.maxsize)
 
 
+"""
+Usage: python3 areafinder.py <image in test_images>
+
+
+"""
 
 def main(clargs: [str]):
     im_path = "./test_images/" + clargs[0]
     img_mx = cv2.imread(im_path, 0)
 
     allvertices, vertices_by_type = find_squares(img_mx)
+    vertexset1 = set()
+    for vertex in allvertices:
+        vertexset1.add(tuple(vertex))
+    # print(len(vertexset1))
 
     shapes = build_shapes(vertices_by_type)
+
+    vertexset2 = set()
+    for shape in shapes:
+        for vertex in shape:
+            vertexset2.add(tuple(vertex))
+    # print(len(vertexset2))
+
+    assert(len(vertexset1) == len(vertexset2))
 
     #### points must pass vertical line test if plotted sequentially (no three intersections)
     area = 0
@@ -33,6 +50,8 @@ def build_shapes(vertices_by_type: []):
 
     shapes = []
     trees = []
+    used_vertices = set()
+    num_shapes = len(vertices_by_type[0])
 
     shape_type = ('square', 4) if len(vertices_by_type) == 4 else ('triangle', 3)
 
@@ -41,10 +60,38 @@ def build_shapes(vertices_by_type: []):
 
     if shape_type[0] == 'square':
         for vertex in vertices_by_type[0]:
-            corner2 = vertices_by_type[1][trees[1].query(vertex)[1]]
-            corner3 = vertices_by_type[2][trees[2].query(corner2)[1]]
-            corner4 = vertices_by_type[3][trees[3].query(corner3)[1]]
+
+            
+            poss = trees[1].query(vertex, k=num_shapes-1)
+            for index in poss[1]:
+                pick = vertices_by_type[1][index]
+                if tuple(pick) not in used_vertices:
+                    if pick[1] > vertex[1] and ((pick[0] - vertex[0]) < vertex[0] * .05):
+                        corner2 = pick
+                        used_vertices.add(tuple(pick))
+                        break
+            
+            poss = trees[2].query(corner2, k=num_shapes-1)
+            for index in poss[1]:
+                pick = vertices_by_type[2][index]
+                if tuple(pick) not in used_vertices:
+                    if pick[0] > corner2[0] and ((pick[1] - corner2[1]) < corner2[1] * .05):
+                        corner3 = pick
+                        used_vertices.add(tuple(pick))
+                        break
+            
+            poss = trees[3].query(corner3, k=num_shapes-1)
+            for index in poss[1]:
+                pick = vertices_by_type[3][index]
+                if tuple(pick) not in used_vertices:
+                    if pick[1] < corner3[1] and ((pick[0] - corner3[0]) < corner3[0] * .05):
+                        corner4 = pick
+                        used_vertices.add(tuple(pick))
+                        break
+
             shapes.append([vertex, corner2, corner3, corner4])
+
+
     elif shape_type[0] == 'triangle':
         for vertex in vertices_by_type[0]:
             corner2 = vertices_by_type[1][trees[1].query(vertex)[1]]
